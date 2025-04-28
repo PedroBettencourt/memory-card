@@ -10,24 +10,35 @@ function Card({id, title, image, handleClick}) {
     )
 }
 
-function Game() {
+function Game({score, setScore, bestScore, setBestScore}) {
     
     const [cards, setCards] = useState([]);
     const [clickedCards, setClickedCards] = useState([]);
-    const [score, setScore] = useState(0);
-    const [bestScore, setBestScore] = useState(0);
 
     useEffect(() => {
         const newCards = [];
-        for (let i = 0; i < 3; i++) {
-            //const flower = fetch() //api key sk-a4BP680eb60d6c1ad10066 perenual.com
-            const title = "a";
-            const image = "b";
-            //newCards.push({id: crypto.randomUUID(), title: title, image: image});
-            const id = crypto.randomUUID();
-            newCards.push({id: id, title: id.slice(0,4), image: image}); // CHANGE THIS -- Just testing reorder
+
+        // Fetch the plant data
+        async function fetchData() {
+            const url = 'https://perenual.com/api/v2/species-list?key=sk-a4BP680eb60d6c1ad10066'
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Response not ok");
+            
+            const json = await response.json();
+            const data = await json.data;
+
+            for (let i = 0; i < 10; i++) {
+                const title = data[i].common_name;
+                const image = data[i].default_image.original_url
+                const id = crypto.randomUUID();
+    
+                newCards.push({id: id, title: title, image: image});
+            }
+            setCards(newCards);        
         }
-        setCards(newCards);        
+
+        fetchData()
+
         return;
     }, []);
 
@@ -49,9 +60,6 @@ function Game() {
     return (
         <div className="game">
             {cards.map((card) => <Card key={card.id} id={card.id} title={card.title} image={card.image} handleClick={handleClick} />)}
-
-            <p>Score: {score}</p>
-            <p>Best Score: {bestScore}</p>
         </div>
     )
 }
